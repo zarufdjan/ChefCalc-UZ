@@ -161,11 +161,13 @@ def get_old_price_records() -> list[dict]:
                 "min_price": item.get("price"),
                 "max_price": item.get("price"),
                 "avg_price": item.get("price"),
-                "supplier": "Твоя база",
+                # В старом prices.json поставщик не был указан.
+                # Не придумываем источник, а честно показываем, что это старая база.
+                "supplier": "Источник не указан (старая база)",
                 "date": item.get("date", ""),
                 "min_order": "",
                 "source_url": "",
-                "notes": "Цена из текущего prices.json",
+                "notes": "Цена из старой базы ChefCalc",
             }
         )
     return records
@@ -294,8 +296,8 @@ def render_record(index: int, record: dict) -> str:
     lines = [
         f"<b>{index}. {product}</b>",
         f"💰 {price_text} / {unit}",
-        f"🏢 Поставщик: {supplier}",
-        f"📅 Дата: {date}",
+        f"🛒 Источник / поставщик: {supplier}",
+        f"📅 Дата проверки: {date}",
     ]
 
     # Для мешков/упаковок дополнительно считаем цену за кг.
@@ -310,8 +312,12 @@ def render_record(index: int, record: dict) -> str:
     if min_order:
         lines.append(f"📦 Мин. партия: {escape(min_order)}")
 
+    # Не показываем внутреннее имя файла prices.json пользователю.
+    # Пользователь видит только реальный источник/поставщика либо честную пометку.
     if notes:
-        lines.append(f"📝 {escape(notes)}")
+        clean_notes = str(notes)
+        clean_notes = clean_notes.replace("prices.json", "старую базу")
+        lines.append(f"📝 {escape(clean_notes)}")
 
     if source_url.startswith("http"):
         lines.append(f'🔗 <a href="{escape(source_url)}">Источник</a>')
