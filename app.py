@@ -147,6 +147,26 @@ def escape(value: Any) -> str:
     return html.escape(str(value or ""))
 
 
+
+def infer_legacy_supplier(product_name: str) -> str:
+    """
+    Extract a supplier/source label from the product name in the existing
+    prices.json without inventing information.
+
+    Examples:
+      "... ЦС" / "... ЦС." -> "ЦС"
+      other legacy rows -> "Не указан"
+    """
+    name = str(product_name or "").strip()
+    # "ЦС" appears as a suffix in the existing purchase database.
+    if re.search(r"(?:^|\s)ЦС(?:\.|\s|$)", name, flags=re.IGNORECASE):
+        return "ЦС"
+
+    # Do not guess Food City / Куйлик / another supplier for legacy rows
+    # when that supplier is not recorded in the source data.
+    return "Не указан"
+
+
 def get_old_price_records() -> list[dict]:
     records = []
     for name, item in PRICES.items():
@@ -160,8 +180,7 @@ def get_old_price_records() -> list[dict]:
                 "price_type": "fixed",
                 "min_price": item.get("price"),
                 "max_price": item.get("price"),
-                "avg_price": item.get("price"),
-                "supplier": "Твой отчёт о закупках",
+                "avg_price": item.get("price"),                "supplier": infer_legacy_supplier(name),
                 "date": item.get("date", ""),
                 "min_order": "",
                 "source_url": "",
@@ -273,7 +292,7 @@ def search_products(query: str, limit: int = 30) -> list[dict]:
 
 def render_record(index: int, record: dict) -> str:
     product = escape(record.get("product"))
-    supplier = escape(record.get("supplier") or "Твой отчёт о закупках")
+    supplier = escape(record.get("supplier") or "Не указан")
     unit = escape(record.get("unit") or "—")
     date = escape(record.get("date") or "—")
     min_order = record.get("min_order") or ""
