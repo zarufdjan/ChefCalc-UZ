@@ -161,13 +161,11 @@ def get_old_price_records() -> list[dict]:
                 "min_price": item.get("price"),
                 "max_price": item.get("price"),
                 "avg_price": item.get("price"),
-                # В старом prices.json поставщик не был указан.
-                # Не придумываем источник, а честно показываем, что это старая база.
-                "supplier": "Источник не указан (старая база)",
+                "supplier": "Не указан",
                 "date": item.get("date", ""),
                 "min_order": "",
                 "source_url": "",
-                "notes": "Цена из старой базы ChefCalc",
+                "notes": "",
             }
         )
     return records
@@ -275,7 +273,7 @@ def search_products(query: str, limit: int = 30) -> list[dict]:
 
 def render_record(index: int, record: dict) -> str:
     product = escape(record.get("product"))
-    supplier = escape(record.get("supplier") or "—")
+    supplier = escape(record.get("supplier") or "Не указан")
     unit = escape(record.get("unit") or "—")
     date = escape(record.get("date") or "—")
     min_order = record.get("min_order") or ""
@@ -296,8 +294,8 @@ def render_record(index: int, record: dict) -> str:
     lines = [
         f"<b>{index}. {product}</b>",
         f"💰 {price_text} / {unit}",
-        f"🛒 Источник / поставщик: {supplier}",
-        f"📅 Дата проверки: {date}",
+        f"🏢 Поставщик: {supplier}",
+        f"📅 Дата: {date}",
     ]
 
     # Для мешков/упаковок дополнительно считаем цену за кг.
@@ -312,15 +310,11 @@ def render_record(index: int, record: dict) -> str:
     if min_order:
         lines.append(f"📦 Мин. партия: {escape(min_order)}")
 
-    # Не показываем внутреннее имя файла prices.json пользователю.
-    # Пользователь видит только реальный источник/поставщика либо честную пометку.
     if notes:
-        clean_notes = str(notes)
-        clean_notes = clean_notes.replace("prices.json", "старую базу")
-        lines.append(f"📝 {escape(clean_notes)}")
+        lines.append(f"📝 {escape(notes)}")
 
     if source_url.startswith("http"):
-        lines.append(f'🔗 <a href="{escape(source_url)}">Источник</a>')
+        lines.append(f'🔗 <a href="{escape(source_url)}">Прайс / сайт поставщика</a>')
 
     return "\n".join(lines)
 
