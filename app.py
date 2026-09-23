@@ -161,7 +161,7 @@ def get_old_price_records() -> list[dict]:
                 "min_price": item.get("price"),
                 "max_price": item.get("price"),
                 "avg_price": item.get("price"),
-                "supplier": "Не указан",
+                "supplier": "Твой отчёт о закупках",
                 "date": item.get("date", ""),
                 "min_order": "",
                 "source_url": "",
@@ -273,7 +273,7 @@ def search_products(query: str, limit: int = 30) -> list[dict]:
 
 def render_record(index: int, record: dict) -> str:
     product = escape(record.get("product"))
-    supplier = escape(record.get("supplier") or "Не указан")
+    supplier = escape(record.get("supplier") or "Твой отчёт о закупках")
     unit = escape(record.get("unit") or "—")
     date = escape(record.get("date") or "—")
     min_order = record.get("min_order") or ""
@@ -311,7 +311,8 @@ def render_record(index: int, record: dict) -> str:
         lines.append(f"📦 Мин. партия: {escape(min_order)}")
 
     if notes:
-        lines.append(f"📝 {escape(notes)}")
+        clean_notes = str(notes).replace("prices.json", "отчёт о закупках")
+        lines.append(f"📝 {escape(clean_notes)}")
 
     if source_url.startswith("http"):
         lines.append(f'🔗 <a href="{escape(source_url)}">Прайс / сайт поставщика</a>')
